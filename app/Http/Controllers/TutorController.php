@@ -9,7 +9,20 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class TutorController extends Controller
-{
+{   
+    public function pendingTutors()
+    {
+        $tutors = Tutor::with('user')
+        ->where('status', 'pending')
+        ->get();
+
+
+        return response()->json([
+            'message' => 'Pending tutors retrieved successfully!',
+            'tutors' => $tutors
+        ], 200);
+    }
+
     public function register(Request $request)
     {
         $validatedData = $request->validate([

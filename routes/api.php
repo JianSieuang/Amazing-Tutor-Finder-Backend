@@ -12,3 +12,4 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 
 Route::post('/tutors/register', [TutorController::class, 'register']);
+Route::get('/tutors/pending', [TutorController::class, 'pendingTutors']);
