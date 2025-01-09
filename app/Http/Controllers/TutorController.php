@@ -10,11 +10,23 @@ use Illuminate\Support\Facades\Storage;
 
 class TutorController extends Controller
 {   
+    public function index()
+    {
+        $tutors = Tutor::with('user')
+            ->where('status', 'approved')
+            ->get();
+
+        return response()->json([
+            'message' => 'Pending tutors retrieved successfully!',
+            'tutors' => $tutors
+        ], 200);
+    }
+
     public function pendingTutors()
     {
         $tutors = Tutor::with('user')
-        ->where('status', 'pending')
-        ->get();
+            ->where('status', 'pending')
+            ->get();
 
 
         return response()->json([
