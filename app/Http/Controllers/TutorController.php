@@ -7,9 +7,10 @@ use App\Models\Tutor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules;
 
 class TutorController extends Controller
-{   
+{
     public function index()
     {
         $tutors = Tutor::with('user')
@@ -37,7 +38,7 @@ class TutorController extends Controller
 
     public function register(Request $request)
     {
-        $validatedData = $request->validate([
+        $request->validate([
             'fullname' => 'required|string|max:255',
             'phone_number' => 'nullable|string',
             'email' => 'required|string|email|max:255',
@@ -48,43 +49,61 @@ class TutorController extends Controller
             'instagram' => 'nullable|string',
             'linkedln' => 'nullable|string',
             'whatsapp' => 'nullable|string',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         if ($request->hasFile('profile_picture')) {
             $path = $request->file('profile_picture')->store('profile_pictures', 'public');
             $imageUrl = Storage::url($path);
-            $validatedData['profile_picture'] = $imageUrl;
         }
 
-        if (User::where('email', $validatedData['email'])->exists()) {
+        if (User::where('email', $request['email'])->exists()) {
             return response()->json(['message' => 'Email already exists!'], 400);
         }
 
-        if (User::where('phone', $validatedData['phone_number'])->exists()) {
+        if (User::where('phone', $request['phone_number'])->exists()) {
             return response()->json(['message' => 'Phone number already exists!'], 400);
         }
 
         $user = User::create([
-            'name' => $validatedData['fullname'],
-            'email' => $validatedData['email'],
-            'password' => Hash::make($validatedData['phone_number']),
+            'name' => $request['fullname'],
+            'email' => $request['email'],
+            'password' => Hash::make($request['password']),
             'role' => 'tutor',
         ]);
 
-        $user->phone = $validatedData['phone_number'];
-        $user->image = $validatedData['profile_picture'];
+        $user->phone = $request['phone_number'];
+        $user->image = $imageUrl;
         $user->save();
 
         $tutor = Tutor::create([
             'user_id' => $user->id,
-            'education_background' => $validatedData['education_background'],
-            'teaching_experience' => $validatedData['teaching_experience'],
-            'about_me' => $validatedData['about_me'],
-            'instagram' => $validatedData['instagram'],
-            'linkedln' => $validatedData['linkedln'],
-            'whatsapp' => $validatedData['whatsapp'],
+            'education_background' => $request['education_background'],
+            'teaching_experience' => $request['teaching_experience'],
+            'about_me' => $request['about_me'],
+            'instagram' => $request['instagram'],
+            'linkedln' => $request['linkedln'],
+            'whatsapp' => $request['whatsapp'],
         ]);
 
         return response()->json(['message' => 'Tutor registered successfully!', 'user' => $user, 'tutor' => $tutor], 201);
+    }
+
+    public function updateStatus(Request $request, $tutor_id)
+    {
+        $request->validate([
+            'status' => 'required|string|in:approved,rejected',
+        ]);
+
+        $tutor = Tutor::find($tutor_id);
+
+        if (!$tutor) {
+            return response()->json(['message' => 'Tutor not found!'], 404);
+        }
+
+        $tutor->status = $request['status'];
+        $tutor->save();
+
+        return response()->json(['message' => 'Tutor status updated successfully!', 'tutor' => $tutor], 200);
     }
 }
