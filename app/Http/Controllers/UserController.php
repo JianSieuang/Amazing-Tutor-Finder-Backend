@@ -51,17 +51,13 @@ class UserController extends Controller
 
     public function updateImage(Request $request, $user_id)
     {
+        if ($request->hasFile('profile_picture') && $request->file('profile_picture')->getSize() > 1024 * 1024) {
+            return response()->json(['error' => 'Image size should not be greater than 1MB'], 400);
+        }
+
         $request->validate([
             'profile_picture' => 'nullable|file|image|max:1024'
         ]);
-
-        if ($request->file('profile_picture')->getSize() > 1024) {
-            return response()->json(['error' => 'Image size should not exceed 1MB'], 400);
-        }
-
-        if (!$request->file('profile_picture')->isValid()) {
-            return response()->json(['error' => 'Invalid image'], 400);
-        }
 
         if ($request->hasFile('profile_picture')) {
             $path = $request->file('profile_picture')->store('profile_pictures', 'public');
