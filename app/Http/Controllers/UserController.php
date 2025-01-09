@@ -55,13 +55,21 @@ class UserController extends Controller
             'profile_picture' => 'nullable|file|image|max:1024'
         ]);
 
+        if ($request->file('profile_picture')->getSize() > 1024) {
+            return response()->json(['error' => 'Image size should not exceed 1MB'], 400);
+        }
+
+        if (!$request->file('profile_picture')->isValid()) {
+            return response()->json(['error' => 'Invalid image'], 400);
+        }
+
         if ($request->hasFile('profile_picture')) {
             $path = $request->file('profile_picture')->store('profile_pictures', 'public');
             $imageUrl = Storage::url($path);
 
             $user = User::find($user_id);
 
-            if($user) {
+            if ($user) {
                 $user->image = $imageUrl;
                 $user->save();
                 return response()->json(['message' => 'Image updated successfully', 'user' => $user], 200);
