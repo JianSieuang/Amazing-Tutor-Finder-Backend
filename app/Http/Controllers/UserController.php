@@ -25,6 +25,7 @@ class UserController extends Controller
             'first_name' => 'nullable|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -44,6 +45,8 @@ class UserController extends Controller
         }
 
         $user->name = $request->input('name');
+        $user->email = $request->input('email');
+        
         $user->save();
 
         return $request->user();
