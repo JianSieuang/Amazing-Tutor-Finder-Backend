@@ -14,6 +14,11 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 // Update Image
 Route::middleware(['auth:sanctum'])->post('/users/{user_id}/image', [UserController::class, 'updateImage']);
 
+// Change password
+Route::middleware(['auth:sanctum'])->post('/user/changePassword', [UserController::class, 'changePassword']);
+
+
+
 // Tutor
 Route::get('/tutors', [TutorController::class, 'index']);
 Route::get('/tutors/pending', [TutorController::class, 'pendingTutors']);

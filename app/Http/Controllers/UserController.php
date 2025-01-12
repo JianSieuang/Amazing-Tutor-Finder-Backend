@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -46,7 +47,7 @@ class UserController extends Controller
 
         $user->name = $request->input('name');
         $user->email = $request->input('email');
-        
+
         $user->save();
 
         return $request->user();
@@ -78,5 +79,23 @@ class UserController extends Controller
         }
 
         return response()->json(['error' => 'Image not found'], 404);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $user = Auth::user();
+
+        if (strlen($request->input('new_password')) < 8) {
+            return response()->json(['message' => 'Password should be at least 8 characters'], 400);
+        }
+
+        if (!Hash::check($request->input('current_password'), $user->password)) {
+            return response()->json(['message' => 'Current password is incorrect'], 400);
+        }
+
+        $user->password = Hash::make($request->input('new_password'));
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully'], 200);
     }
 }
