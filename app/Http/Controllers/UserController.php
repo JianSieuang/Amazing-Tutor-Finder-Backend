@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LinkedAccount;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -97,5 +98,53 @@ class UserController extends Controller
         $user->save();
 
         return response()->json(['message' => 'Password changed successfully'], 200);
+    }
+
+    public function linkEmail(Request $request)
+    {
+        $user = Auth::user();
+
+        $linkUser = User::where('email', $request->input('email'))->first();
+
+        if (!$linkUser) {
+            return response()->json(['message' => 'Email not found'], 404);
+        }
+
+        if ($linkUser->role === 'tutor') {
+            $txt = $user->role === 'student' ? 'Parent' : 'Student / Child';
+            return response()->json(['message' => 'Only accept ' . $txt . ' email'], 404);
+        }
+
+        if ($user->role === 'student') {
+            $linkedAccount = LinkedAccount::where('student_id', $user->id)->where('parent_id', $linkUser->id)->first();
+        } else {
+            $linkedAccount = LinkedAccount::where('parent_id', $user->id)->where('student_id', $linkUser->id)->first();
+        }
+
+        if ($linkedAccount->exists() && $linkedAccount->created_at->diffInDays(now()) < 7 && $linkedAccount->status !== 'success') {
+            if ($linkedAccount->status === 'rejected') {
+                return response()->json(['message' => 'Your request has been rejected. Please wait for 7 days before linking again.'], 400);
+            } else {
+                return response()->json(['message' => 'Email already linked. Please wait for 7 days before linking again.'], 400);
+            }
+        }
+
+        $linkAccountDB = new LinkedAccount();
+
+        if ($user->role === 'student') {
+            $linkAccountDB->student_id = $user->id;
+            $linkAccountDB->parent_id = $linkUser->id;
+        } else {
+            $linkAccountDB->parent_id = $user->id;
+            $linkAccountDB->student_id = $linkUser->id;
+        }
+
+        $linkAccountDB->save();
+
+        return response()->json([
+            'message' => 'Email linked successfully',
+            'user' => $user,
+            'linked_user' => $linkUser
+        ], 200);
     }
 }

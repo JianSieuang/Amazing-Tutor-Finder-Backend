@@ -17,7 +17,8 @@ Route::middleware(['auth:sanctum'])->post('/users/{user_id}/image', [UserControl
 // Change password
 Route::middleware(['auth:sanctum'])->post('/user/changePassword', [UserController::class, 'changePassword']);
 
-
+// Link Email
+Route::middleware(['auth:sanctum'])->post('/user/linkEmail', [UserController::class, 'linkEmail']);
 
 // Tutor
 Route::get('/tutors', [TutorController::class, 'index']);
