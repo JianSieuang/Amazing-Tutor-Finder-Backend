@@ -121,12 +121,11 @@ class UserController extends Controller
             $linkedAccount = LinkedAccount::where('parent_id', $user->id)->where('student_id', $linkUser->id)->first();
         }
 
-        if ($linkedAccount->exists() && $linkedAccount->created_at->diffInDays(now()) < 7 && $linkedAccount->status !== 'success') {
-            if ($linkedAccount->status === 'rejected') {
-                return response()->json(['message' => 'Your request has been rejected. Please wait for 7 days before linking again.'], 400);
-            } else {
-                return response()->json(['message' => 'Email already linked. Please wait for 7 days before linking again.'], 400);
-            }
+        if ($linkedAccount && $linkedAccount->created_at->diffInDays(now()) < 7 && $linkedAccount->status !== 'success') {
+            $message = $linkedAccount->status === 'rejected' ? 'Your request has been rejected. Please wait for 7 days before linking again.' :
+                'Link email requested. Please wait for 7 days before linking again.';
+
+            return response()->json(['message' => $message], 400);
         }
 
         $linkAccountDB = new LinkedAccount();
