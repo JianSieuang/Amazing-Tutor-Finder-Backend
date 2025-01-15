@@ -201,7 +201,7 @@ class UserController extends Controller
         }
     }
 
-    public function unlinkEmail(Request $request, $user_id)
+    public function unlinkAccount(Request $request, $user_id)
     {
         $user = User::find($user_id);
 
@@ -211,13 +211,13 @@ class UserController extends Controller
 
         if ($user->role === 'student') {
             $stu = Student::where('user_id', $user->id)->first();
-            $par = Parents::where('user_id', $request->input('unlinkEmail'))->first();
+            $par = Parents::where('user_id', $request->input('unlinkAccount'))->first();
             $linkedAccount = LinkedAccount::where('student_id', $stu->id)->where('parent_id', $par->id)->first();
         }
 
         if ($user->role === 'parent') {
             $par = Parents::where('user_id', $user->id)->first();
-            $stu = Student::where('user_id', $request->input('unlinkEmail'))->first();
+            $stu = Student::where('user_id', $request->input('unlinkAccount'))->first();
             $linkedAccount = LinkedAccount::where('student_id', $stu->id)->where('parent_id', $par->id)->first();
         }
 

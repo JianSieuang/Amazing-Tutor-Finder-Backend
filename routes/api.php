@@ -22,7 +22,7 @@ Route::middleware(['auth:sanctum'])->post('/user/changePassword', [UserControlle
 Route::middleware(['auth:sanctum'])->post('/user/linkEmail', [UserController::class, 'linkEmail']);
 Route::middleware(['auth:sanctum'])->get('/users/{user_id}/linkAccount', [UserController::class, 'getLinkedAccounts']);
 Route::post('/linkAccount/{link_account_id}/status', [UserController::class, 'updateLinkAccountStatus']);
-Route::middleware(['auth:sanctum'])->post('/users/{user_id}/unlinkEmail', [UserController::class, 'unlinkEmail']);
+Route::middleware(['auth:sanctum'])->post('/users/{user_id}/unlinkAccount', [UserController::class, 'unlinkAccount']);
 
 // Tutor
 Route::get('/tutors', [TutorController::class, 'index']);
