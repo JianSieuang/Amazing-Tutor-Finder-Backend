@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TutorController;
+use App\Models\Parents;
 
 Route::middleware(['auth:sanctum'])->put('/user', [UserController::class, 'update']);
 
@@ -17,8 +18,11 @@ Route::middleware(['auth:sanctum'])->post('/users/{user_id}/image', [UserControl
 // Change password
 Route::middleware(['auth:sanctum'])->post('/user/changePassword', [UserController::class, 'changePassword']);
 
-// Link Email
+// Linked Account
 Route::middleware(['auth:sanctum'])->post('/user/linkEmail', [UserController::class, 'linkEmail']);
+Route::middleware(['auth:sanctum'])->get('/users/{user_id}/linkAccount', [UserController::class, 'getLinkedAccounts']);
+Route::post('/linkAccount/{link_account_id}/status', [UserController::class, 'updateLinkAccountStatus']);
+Route::middleware(['auth:sanctum'])->post('/users/{user_id}/unlinkEmail', [UserController::class, 'unlinkEmail']);
 
 // Tutor
 Route::get('/tutors', [TutorController::class, 'index']);

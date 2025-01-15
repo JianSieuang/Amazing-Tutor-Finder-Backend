@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\LinkedAccount;
+use App\Models\Parents;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -110,7 +112,7 @@ class UserController extends Controller
             return response()->json(['message' => 'Email not found'], 404);
         }
 
-        if ($linkUser->role === 'tutor') {
+        if (($linkUser->role === 'tutor') || ($user->role === 'student' && $linkUser->role === 'student') || ($user->role === 'parent' && $linkUser->role === 'parent')) {
             $txt = $user->role === 'student' ? 'Parent' : 'Student / Child';
             return response()->json(['message' => 'Only accept ' . $txt . ' email'], 404);
         }
@@ -131,11 +133,11 @@ class UserController extends Controller
         $linkAccountDB = new LinkedAccount();
 
         if ($user->role === 'student') {
-            $linkAccountDB->student_id = $user->id;
-            $linkAccountDB->parent_id = $linkUser->id;
+            $linkAccountDB->student_id = Student::where('user_id', $user->id)->first()->id;
+            $linkAccountDB->parent_id = Parents::where('user_id', $linkUser->id)->first()->id;
         } else {
-            $linkAccountDB->parent_id = $user->id;
-            $linkAccountDB->student_id = $linkUser->id;
+            $linkAccountDB->parent_id = Parents::where('user_id', $user->id)->first()->id;
+            $linkAccountDB->student_id = Student::where('user_id', $linkUser->id)->first()->id;
         }
 
         $linkAccountDB->save();
@@ -143,7 +145,88 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Email linked successfully',
             'user' => $user,
-            'linked_user' => $linkUser
+            'linked_user' => $linkUser,
+            'linked_account' => $linkAccountDB
         ], 200);
+
+        return response()->json(['message' => 'Feature not implemented yet'], 501);
+    }
+
+    public function updateLinkAccountStatus(Request $request, $link_account_id)
+    {
+        $decodedStatus = base64_decode($request->input('status'));
+        $decodedId = base64_decode($link_account_id);
+
+        $linkAccount = LinkedAccount::find($decodedId);
+
+        if (!$linkAccount) {
+            return response()->json(['error' => 'Link account not found'], 404);
+        }
+
+        $linkAccount->status = $decodedStatus;
+        $linkAccount->save();
+
+        return response()->json([
+            'message' => 'Status updated successfully',
+            'student' => User::find(Student::find($linkAccount->student_id)->user_id),
+            'parent' => User::find(Parents::find($linkAccount->parent_id)->user_id),
+            'status' => $linkAccount->status
+        ], 200);
+    }
+
+    public function getLinkedAccounts($user_id)
+    {
+        $user = User::find($user_id);
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        if ($user->role === 'student') {
+            $linkedAccounts = LinkedAccount::where('student_id', Student::where('user_id', $user->id)->first()->id)->get();
+            $parent = $linkedAccounts->map(function ($linkedAccount) {
+                return \App\Models\User::find(\App\Models\Parents::find($linkedAccount->parent_id)->user_id);
+            })->first();
+
+            return response()->json(['linkedEmail' => $parent], 200);
+        }
+
+        if ($user->role === 'parent') {
+            $linkedAccounts = LinkedAccount::where('parent_id', Parents::where('user_id', $user->id)->first()->id)->get();
+            $students = $linkedAccounts->map(function ($linkedAccount) {
+                return User::find(Student::find($linkedAccount->student_id)->user_id);
+            });
+
+            return response()->json(['linkedEmail' => $students], 200);
+        }
+    }
+
+    public function unlinkEmail(Request $request, $user_id)
+    {
+        $user = User::find($user_id);
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        if ($user->role === 'student') {
+            $stu = Student::where('user_id', $user->id)->first();
+            $par = Parents::where('user_id', $request->input('unlinkEmail'))->first();
+            $linkedAccount = LinkedAccount::where('student_id', $stu->id)->where('parent_id', $par->id)->first();
+        }
+
+        if ($user->role === 'parent') {
+            $par = Parents::where('user_id', $user->id)->first();
+            $stu = Student::where('user_id', $request->input('unlinkEmail'))->first();
+            $linkedAccount = LinkedAccount::where('student_id', $stu->id)->where('parent_id', $par->id)->first();
+        }
+
+        if (!$linkedAccount) {
+            return response()->json(['error' => 'Linked account not found'], 404);
+        }
+
+        $linkedAccount->delete();
+
+        return response()->json(['message' => 'Email unlinked successfully'], 200);
     }
 }
