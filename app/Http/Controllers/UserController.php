@@ -183,7 +183,7 @@ class UserController extends Controller
         }
 
         if ($user->role === 'student') {
-            $linkedAccounts = LinkedAccount::where('student_id', Student::where('user_id', $user->id)->first()->id)->get();
+            $linkedAccounts = LinkedAccount::where('student_id', Student::where('user_id', $user->id)->first()->id)->where('status', '!=', 'rejected')->get();
             $parent = $linkedAccounts->map(function ($linkedAccount) {
                 return \App\Models\User::find(\App\Models\Parents::find($linkedAccount->parent_id)->user_id);
             })->first();
@@ -192,7 +192,7 @@ class UserController extends Controller
         }
 
         if ($user->role === 'parent') {
-            $linkedAccounts = LinkedAccount::where('parent_id', Parents::where('user_id', $user->id)->first()->id)->get();
+            $linkedAccounts = LinkedAccount::where('parent_id', Parents::where('user_id', $user->id)->first()->id)->where('status', '!=', 'rejected')->get();
             $students = $linkedAccounts->map(function ($linkedAccount) {
                 return User::find(Student::find($linkedAccount->student_id)->user_id);
             });
@@ -209,11 +209,13 @@ class UserController extends Controller
             return response()->json(['error' => 'User not found'], 404);
         }
 
-        if ($user->role === 'student') {
-            $stu = Student::where('user_id', $user->id)->first();
-            $par = Parents::where('user_id', $request->input('unlinkAccount'))->first();
-            $linkedAccount = LinkedAccount::where('student_id', $stu->id)->where('parent_id', $par->id)->first();
-        }
+        // for now unlink feature only can make it in parent side
+
+        // if ($user->role === 'student') {
+        //     $stu = Student::where('user_id', $user->id)->first();
+        //     $par = Parents::where('user_id', $request->input('unlinkAccount'))->first();
+        //     $linkedAccount = LinkedAccount::where('student_id', $stu->id)->where('parent_id', $par->id)->first();
+        // }
 
         if ($user->role === 'parent') {
             $par = Parents::where('user_id', $user->id)->first();
