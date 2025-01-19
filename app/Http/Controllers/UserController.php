@@ -32,7 +32,6 @@ class UserController extends Controller
             'last_name' => 'nullable|string|max:255',
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'image' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -53,19 +52,6 @@ class UserController extends Controller
 
         $user->name = $request->input('name');
         $user->email = $request->input('email');
-
-        if ($request->has('phone')) {
-            $user->phone = $request->input('phone');
-        }
-
-        // if ($request->hasFile('image')) {
-        //     $user->phone = '12344';
-
-        //     $path = $request->file('image')->store('profile_pictures', 'public');
-        //     $imageUrl = Storage::url($path);
-
-        //     $user->image = $imageUrl;
-        // }
 
         $user->save();
 
