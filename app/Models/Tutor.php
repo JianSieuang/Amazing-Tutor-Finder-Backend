@@ -15,6 +15,7 @@ class Tutor extends Model
         'linkedln',
         'whatsapp',
         'status',
+        'title_image'
     ];
 
     public function user()

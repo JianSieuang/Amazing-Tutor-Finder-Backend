@@ -28,4 +28,5 @@ Route::middleware(['auth:sanctum'])->post('/users/{user_id}/unlinkAccount', [Use
 Route::get('/tutors', [TutorController::class, 'index']);
 Route::get('/tutors/pending', [TutorController::class, 'pendingTutors']);
 Route::post('/tutors/register', [TutorController::class, 'register']);
+Route::get('/tutors/{tutor_id}', [TutorController::class, 'tutorDetails']);
 Route::middleware(['auth:sanctum'])->post('/tutors/{tutor_id}/status', [TutorController::class, 'updateStatus']);
