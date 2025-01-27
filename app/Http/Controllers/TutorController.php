@@ -23,6 +23,25 @@ class TutorController extends Controller
         ], 200);
     }
 
+    public function testing(Request $request)
+    {
+        $perPage = $request->input('perPage', 12);
+        $page = $request->input('page', 1);
+
+        $tutors = Tutor::query()
+            ->with('user')
+            ->where('status', 'approved')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+
+        return response()->json([
+            'message' => 'Pending tutors retrieved successfully!',
+            'tutors' => $tutors
+        ], 200);
+    }
+
     public function pendingTutors()
     {
         $tutors = Tutor::with('user')
