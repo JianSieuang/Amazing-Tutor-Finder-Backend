@@ -7,7 +7,6 @@ use App\Models\Tutor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rules;
 
 class TutorController extends Controller
 {
@@ -138,8 +137,6 @@ class TutorController extends Controller
 
     public function editTutor(Request $request, $user_id)
     {
-        return response()->json(['message' => 'HERE !', 'title_image' => $request->file('title_image')], 200);
-
         $request->validate([
             'fullname' => 'nullable|string|max:255',
             'phone_number' => 'nullable|string',
@@ -152,7 +149,7 @@ class TutorController extends Controller
             'instagram' => 'nullable|string',
             'linkedln' => 'nullable|string',
             'whatsapp' => 'nullable|string',
-            'title_image' => 'nullable',
+            'title_picture' => 'nullable',
         ]);
 
         $tutor = Tutor::where('user_id', $user_id)->first();
@@ -172,8 +169,8 @@ class TutorController extends Controller
             $imageUrl = Storage::url($path);
         }
 
-        if ($request->hasFile('title_image')) {
-            $path = $request->file('title_image')->store('profile_pictures', 'public');
+        if ($request->hasFile('title_picture')) {
+            $path = $request->file('title_picture')->store('profile_pictures', 'public');
             $titleImageUrl = Storage::url($path);
         }
 
@@ -189,11 +186,9 @@ class TutorController extends Controller
         $tutor->instagram = $request['instagram'] ?? $tutor->instagram;
         $tutor->linkedln = $request['linkedln'] ?? $tutor->linkedln;
         $tutor->whatsapp = $request['whatsapp'] ?? $tutor->whatsapp;
-        $titleImageUrl = $request->hasFile('title_image')
-            ? Storage::url($request->file('title_image')->store('title_images', 'public'))
-            : $tutor->title_image;
+        $tutor->title_image = $titleImageUrl ?? $tutor->title_image;
         $tutor->save();
 
-        return response()->json(['message' => 'Tutor updated successfully!', 'user' => $user, 'tutor' => $tutor], 200);
+        return response()->json(['message' => 'Tutor updated successfully!', 'user' => $user, 'tutor' => $tutor, 'title_image' => $titleImageUrl], 200);
     }
 }
