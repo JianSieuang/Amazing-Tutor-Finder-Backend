@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class EnrollTutor extends Model
 {
-    protected $table = 'enroll_tutors';
     protected $fillable = [
         'student_id',
         'tutor_id',
