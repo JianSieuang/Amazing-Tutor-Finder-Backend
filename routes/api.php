@@ -34,3 +34,4 @@ Route::get('/tutors/{tutor_id}', [TutorController::class, 'tutorDetails']);
 Route::middleware(['auth:sanctum'])->post('/tutors/{tutor_id}/status', [TutorController::class, 'updateStatus']);
 Route::middleware(['auth:sanctum'])->post('/tutors/{tutor_id}/add_session', [TutorController::class, 'addSession']);
 Route::get('/tutors/{tutor_id}/sessions', [TutorController::class, 'getSessions']);
+Route::get('/tutors/{tutor_id}/dashboard', [TutorController::class, 'getDashboard']);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\EnrollTutor;
 use App\Models\User;
 use App\Models\Tutor;
 use App\Models\TutorSession;
@@ -250,5 +251,24 @@ class TutorController extends Controller
         $sessions = TutorSession::where('user_id', $user_id)->first();
 
         return response()->json(['message' => 'Tutor sessions retrieved successfully!', 'sessions' => $sessions], 200);
+    }
+
+    public function getDashboard($user_id)
+    {
+        $tutor = Tutor::where('user_id', $user_id)->first();
+
+        if (!$tutor) {
+            return response()->json(['message' => 'Tutor not found!'], 404);
+        }
+
+        $students = EnrollTutor::where('tutor_id', $tutor->id)->get();
+        $sessions = TutorSession::where('tutor_id', $tutor->id)->get();
+
+        return response()->json([
+            'message' => 'Tutor students retrieved successfully!',
+            'students' => $students,
+            'amount' => '10.00',
+            'tutorSessions' => $sessions,
+        ], 200);
     }
 }
