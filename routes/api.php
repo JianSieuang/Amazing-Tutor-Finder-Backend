@@ -32,3 +32,5 @@ Route::get('/tutors/pending', [TutorController::class, 'pendingTutors']);
 Route::post('/tutors/register', [TutorController::class, 'register']);
 Route::get('/tutors/{tutor_id}', [TutorController::class, 'tutorDetails']);
 Route::middleware(['auth:sanctum'])->post('/tutors/{tutor_id}/status', [TutorController::class, 'updateStatus']);
+Route::middleware(['auth:sanctum'])->post('/tutors/{tutor_id}/add_session', [TutorController::class, 'addSession']);
+Route::get('/tutors/{tutor_id}/sessions', [TutorController::class, 'getSessions']);

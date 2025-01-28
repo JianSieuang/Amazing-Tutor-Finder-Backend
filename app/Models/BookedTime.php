@@ -9,6 +9,7 @@ class BookedTime extends Model
     protected $fillable = [
         'tutor_id',
         'student_id',
+        'month',
         'date',
         'time_slot',
     ];

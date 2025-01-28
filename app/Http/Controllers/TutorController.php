@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Tutor;
+use App\Models\TutorSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -128,11 +129,13 @@ class TutorController extends Controller
     {
         $tutorDetail = Tutor::where('user_id', $tutor_id)->firstOrFail();
 
+        $userDetail = User::find($tutor_id)->first();
+
         if (!$tutorDetail) {
             return response()->json(['message' => 'Tutor not found!'], 404);
         }
 
-        return response()->json(['message' => 'Tutor details retrieved successfully!', 'tutorDetail' => $tutorDetail], 200);
+        return response()->json(['message' => 'Tutor details retrieved successfully!', 'tutorDetail' => $tutorDetail, 'userDetail' => $userDetail], 200);
     }
 
     public function editTutor(Request $request, $user_id)
@@ -190,5 +193,54 @@ class TutorController extends Controller
         $tutor->save();
 
         return response()->json(['message' => 'Tutor updated successfully!', 'user' => $user, 'tutor' => $tutor, 'title_image' => $titleImageUrl], 200);
+    }
+
+    public function addSession(Request $request, $user_id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'course_language' => 'required|string',
+            'price' => 'required|numeric',
+            'session_month' => 'required|string',
+            'session_day'      => 'required|array',
+            'session_time' => 'required|string',
+            'teaching_mode' => 'required|string',
+            'teaching_location' => 'nullable|string',
+        ]);
+
+        $tutor = Tutor::where('user_id', $user_id)->first();
+
+        if (!$tutor) {
+            return response()->json(['message' => 'Tutor not found!'], 404);
+        }
+
+        $session = TutorSession::updateorCreate([
+            'user_id' => $user_id,
+        ], [
+            'tutor_id' => $tutor->id,
+            'title' => $request->input('title'),
+            'description' => $request->input('description'),
+            'course_language' => $request->input('course_language'),
+            'price' => $request->input('price'),
+            'session_month' => $request->input('session_month'),
+            'session_day' => $request->input('session_day'),
+            'session_time' => $request->input('session_time'),
+            'teaching_mode' => $request->input('teaching_mode'),
+            'teaching_location' => $request->input('teaching_location') ?? null,
+        ]);
+
+        if ($session->wasRecentlyCreated) {
+            return response()->json(['message' => 'Session created successfully!', 'session' => $session], 201);
+        } else {
+            return response()->json(['message' => 'Session updated successfully!', 'session' => $session], 200);
+        }
+    }
+
+    public function getSessions($user_id)
+    {
+        $sessions = TutorSession::where('user_id', $user_id)->first();
+
+        return response()->json(['message' => 'Tutor sessions retrieved successfully!', 'sessions' => $sessions], 200);
     }
 }
