@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
                     '13:00-15:00',
                     '16:00-18:00',
                 ]),
-                'teaching_mode' => 'online',
+                'teaching_mode' => 'Online',
                 'teaching_location' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
