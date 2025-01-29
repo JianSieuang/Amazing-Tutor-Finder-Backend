@@ -7,19 +7,31 @@ use Illuminate\Database\Eloquent\Model;
 class Payment extends Model
 {
     protected $fillable = [
-        'user_id',
+        'parent_user_id',
+        'student_user_id',
         'booked_time_id',
+        'paid_by',
         'amount',
         'status',
     ];
 
-    public function user()
+    public function parent()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Parent::class);
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
     }
 
     public function bookedTime()
     {
         return $this->belongsTo(BookedTime::class);
+    }
+
+    public function getPaidByAttribute($value)
+    {
+        return $value == 'parent' ? 'Parent' : 'Student';
     }
 }

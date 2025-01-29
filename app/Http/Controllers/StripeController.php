@@ -33,7 +33,8 @@ class StripeController extends Controller
             'mode' => 'payment',
             'success_url' => route('success', [
                 'tutor_id' => $request->tutor_id,
-                'user_id' => $request->user_id,
+                'parent_user_id' => $request->parent_user_id,
+                'child_user_id' => $request->child_user_id,
                 'month' => $request->month,
                 'sessions' => $request->sessions,
                 'price' => $request->price,
@@ -42,7 +43,7 @@ class StripeController extends Controller
                 'total_price' => $request->total_price,
                 'title' => $request->title,
             ]),
-            'cancel_url' => env('FRONTEND_URL') . '/payment/cancel',
+            'cancel_url' => route('cancel'),
         ]);
 
         return response()->json(['url' => $session->url]);
@@ -54,24 +55,45 @@ class StripeController extends Controller
             foreach ($request->sessions as $session) {
                 $bookedTime = new BookedTime();
                 $bookedTime->tutor_id = $request->tutor_id;
-                $bookedTime->student_id = Student::where('user_id', $request->user_id)->first()->id;
+                $bookedTime->student_id = Student::where('user_id', $request->child_user_id)->first()->id;
                 $bookedTime->month = $request->month;
                 $bookedTime->day = explode(' ', $session)[0];
                 $bookedTime->time_slot = explode(' ', $session)[1];
                 $bookedTime->save();
 
                 $payment = new Payment();
-                $payment->user_id = $request->user_id;
+                $payment->parent_user_id = $request->parent_user_id;
+                $payment->student_user_id = $request->child_user_id;
                 $payment->booked_time_id = $bookedTime->id;
+
+                if ($request->parent_user_id != null) {
+                    $payment->paid_by = 'parent';
+                } else {
+                    $payment->paid_by = 'student';
+                }
+
                 $payment->amount = ($request->price * ($request->service_charge + 1));
                 $payment->status = 'success';
                 $payment->save();
             }
         }
 
-        $session = md5(uniqid(rand(), true) . time() . rand(1000, 9999));
+        $session = $this->generateSession();
         return redirect(
             env('FRONTEND_URL') . '/success?session=' . $session . '&sessions=' . base64_encode($session)
         );
+    }
+
+    public function cancel()
+    {
+        $session = $this->generateSession();
+        return redirect(
+            env('FRONTEND_URL') . '/failed?session=' . $session . '&sessions=' . base64_encode($session)
+        );
+    }
+
+    private function generateSession()
+    {
+        return md5(uniqid(rand(), true) . time() . rand(1000, 9999));
     }
 }
