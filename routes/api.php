@@ -27,7 +27,6 @@ Route::middleware(['auth:sanctum'])->post('/tutors/{user_id}/edit', [TutorContro
 
 // Tutor
 Route::get('/tutors', [TutorController::class, 'index']);
-Route::get('/tutors/testing', [TutorController::class, 'testing']);
 Route::get('/tutors/pending', [TutorController::class, 'pendingTutors']);
 Route::post('/tutors/register', [TutorController::class, 'register']);
 Route::get('/tutors/{tutor_id}', [TutorController::class, 'tutorDetails']);

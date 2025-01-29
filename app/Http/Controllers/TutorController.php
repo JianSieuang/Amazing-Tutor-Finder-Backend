@@ -12,23 +12,15 @@ use Illuminate\Support\Facades\Storage;
 
 class TutorController extends Controller
 {
-    public function index()
-    {
-        $tutors = Tutor::with('user')
-            ->where('status', 'approved')
-            ->get();
-
-        return response()->json([
-            'message' => 'Pending tutors retrieved successfully!',
-            'tutors' => $tutors
-        ], 200);
-    }
-
-    public function testing(Request $request)
+    public function index(Request $request)
     {
         $perPage = $request->input('perPage', 12);
         $page = $request->input('page', 1);
 
+        // Get total count of approved tutors
+        $totalTutors = Tutor::where('status', 'approved')->count();
+
+        // Fetch paginated tutors
         $tutors = Tutor::query()
             ->with('user')
             ->where('status', 'approved')
@@ -36,14 +28,20 @@ class TutorController extends Controller
             ->take($perPage)
             ->get();
 
+        // Get associated tutor sessions
         $tutorSessions = TutorSession::whereIn('tutor_id', $tutors->pluck('id')->toArray())->get();
 
         return response()->json([
-            'message' => 'Pending tutors retrieved successfully!',
+            'message' => 'Tutors retrieved successfully!',
             'tutors' => $tutors,
-            'sessions' => $tutorSessions
+            'sessions' => $tutorSessions,
+            'totalTutors' => $totalTutors, // Total count for pagination
+            'totalPages' => ceil($totalTutors / $perPage), // Calculate total pages
+            'currentPage' => $page,
+            'perPage' => $perPage,
         ], 200);
     }
+
 
     public function pendingTutors()
     {
