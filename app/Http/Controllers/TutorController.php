@@ -36,7 +36,6 @@ class TutorController extends Controller
             ->take($perPage)
             ->get();
 
-        // get all the tutorsession that has the tutor_id from $tutors
         $tutorSessions = TutorSession::whereIn('tutor_id', $tutors->pluck('id')->toArray())->get();
 
         return response()->json([

@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LinkedAccount;
-use App\Models\Parents;
-use App\Models\Student;
 use App\Models\User;
+use App\Models\Tutor;
+use App\Models\Report;
+use App\Models\Parents;
+use App\Models\Payment;
+use App\Models\Student;
 use Illuminate\Http\Request;
+use App\Models\LinkedAccount;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use function PHPUnit\Framework\isNull;
+
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-
-use function PHPUnit\Framework\isNull;
 
 class UserController extends Controller
 {
@@ -232,5 +235,32 @@ class UserController extends Controller
         $linkedAccount->delete();
 
         return response()->json(['message' => 'Email unlinked successfully'], 200);
+    }
+
+    public function getAdminDashboard()
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $account = User::where('role', '!=', 'admin')->count();
+        $student = Student::all()->count();
+        $parent = Parents::all()->count();
+        $tutor = Tutor::all()->count();
+        $tutor_application = Tutor::where('status', 'pending')->count();
+        $report = Report::all()->count();
+        $earn = Payment::all()->sum('amount');
+
+        return response()->json([
+            'account' => $account,
+            'student' => $student,
+            'parent' => $parent,
+            'tutor' => $tutor,
+            'tutor_application' => $tutor_application,
+            'report' => $report,
+            'earn' => $earn
+        ], 200);
     }
 }
