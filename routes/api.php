@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TutorController;
-use App\Models\Parents;
+use App\Http\Controllers\StripeController;
 
 Route::middleware(['auth:sanctum'])->put('/user', [UserController::class, 'update']);
 
@@ -40,3 +40,7 @@ Route::get('/tutors/{tutor_id}/dashboard', [TutorController::class, 'getDashboar
 Route::get('/admin/dashboard', [UserController::class, 'getAdminDashboard']);
 Route::middleware(['auth:sanctum'])->post('/admin/social_media', [UserController::class, 'updateSocialMedia']);
 Route::get('/social_media', [UserController::class, 'getSocialMedia']);
+
+
+Route::post('/payment', [StripeController::class, 'checkout']);
+Route::get('/success', [StripeController::class, 'success'])->name('success');
