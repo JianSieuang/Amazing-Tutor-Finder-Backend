@@ -38,3 +38,5 @@ Route::get('/tutors/{tutor_id}/dashboard', [TutorController::class, 'getDashboar
 
 // Admin Dashboard
 Route::get('/admin/dashboard', [UserController::class, 'getAdminDashboard']);
+Route::middleware(['auth:sanctum'])->post('/admin/social_media', [UserController::class, 'updateSocialMedia']);
+Route::get('/social_media', [UserController::class, 'getSocialMedia']);

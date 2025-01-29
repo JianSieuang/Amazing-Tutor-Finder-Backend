@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use App\Models\LinkedAccount;
+use App\Models\SocialMedia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use function PHPUnit\Framework\isNull;
@@ -262,5 +263,39 @@ class UserController extends Controller
             'report' => $report,
             'earn' => $earn
         ], 200);
+    }
+
+    public function getSocialMedia()
+    {
+        $socialMedia = SocialMedia::first();
+
+        if (!$socialMedia) {
+            return response()->json(['error' => 'Social media not found'], 404);
+        }
+
+        return response()->json(['social_media' => $socialMedia], 200);
+    }
+
+    public function updateSocialMedia(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $socialMedia = SocialMedia::first();
+
+        if (!$socialMedia) {
+            $socialMedia = new SocialMedia();
+            $socialMedia->instagram = $request->input('instagram');
+            $socialMedia->facebook = $request->input('facebook');
+            $socialMedia->linkedin = $request->input('linkedin');
+            $socialMedia->save();
+        } else {
+            $socialMedia->update($request->all());
+        }
+
+        return response()->json(['message' => 'Social media updated successfully', 'social_media' => $socialMedia], 200);
     }
 }

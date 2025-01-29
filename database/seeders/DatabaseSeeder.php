@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\SocialMedia;
 use App\Models\User;
 use App\Models\Tutor;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -96,5 +97,11 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        SocialMedia::create([
+            'facebook' => 'https://www.facebook.com/mmumalaysia/',
+            'instagram' => 'https://www.instagram.com/l33_y1_yan6?igsh=MTBheG0zMjU3NmkzOA==',
+            'linkedin' => 'https://my.linkedin.com/in/sim-boon-xun-913766287',
+        ]);
     }
 }
