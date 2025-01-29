@@ -126,11 +126,11 @@ class TutorController extends Controller
         return response()->json(['message' => 'Tutor status updated successfully!', 'tutor' => $tutor], 200);
     }
 
-    public function tutorDetails($tutor_id)
+    public function tutorDetails($user_id)
     {
-        $tutorDetail = Tutor::where('user_id', $tutor_id)->firstOrFail();
+        $tutorDetail = Tutor::where('user_id', $user_id)->firstOrFail();
 
-        $userDetail = User::find($tutor_id)->first();
+        $userDetail = User::where('id', $user_id)->firstOrFail();
 
         if (!$tutorDetail) {
             return response()->json(['message' => 'Tutor not found!'], 404);
