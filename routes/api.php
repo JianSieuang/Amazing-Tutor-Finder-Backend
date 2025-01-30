@@ -47,3 +47,10 @@ Route::get('/cancel', [StripeController::class, 'cancel'])->name('cancel');
 
 // Parent Purchase History
 Route::get('/parent/{id}/purchaseHistory', [UserController::class, 'getPurchaseHistory']);
+
+// Rating Tutor
+Route::post('/rating', [UserController::class, 'ratingTutor']);
+Route::get('/tutors/{id}/rating', [UserController::class, 'getRating']);
+
+// Enrolled Students
+Route::get('/tutors/{id}/enrolled_students', [TutorController::class, 'getEnrolledStudents']);

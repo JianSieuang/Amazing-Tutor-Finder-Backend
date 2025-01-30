@@ -11,11 +11,11 @@ use App\Models\Payment;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use App\Models\LinkedAccount;
+use App\Models\Rate;
 use App\Models\SocialMedia;
 use App\Models\TutorSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use function PHPUnit\Framework\isNull;
 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -355,5 +355,46 @@ class UserController extends Controller
         }
 
         return response()->json(['message' => 'Social media updated successfully', 'social_media' => $socialMedia], 200);
+    }
+
+    public function ratingTutor(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'rateBy' => 'required',
+            'tutorId' => 'required',
+            'rating' => 'nullable|numeric',
+            'feedback' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $rating = new Rate();
+        $rating->tutor_id = $request->tutorId;
+        $rating->rate_by = $request->rateBy;
+        $rating->rate = $request->rating;
+        $rating->description = $request->feedback;
+        $rating->save();
+
+        return response()->json([
+            'rating' => $rating
+        ], 200);
+    }
+
+    public function getRating($tutor_id)
+    {
+        $rating = Rate::where('tutor_id', $tutor_id)->get();
+
+        $user = User::whereIn('id', $rating->pluck('rate_by'))->get();
+
+        $rating = $rating->map(function ($item) use ($user) {
+            $item->user = $user->where('id', $item->rate_by)->first()->only(['name', 'image']);
+            return $item;
+        });
+
+        $overallRating = $rating->avg('rate');
+
+        return response()->json(['rating' => $rating, 'overall_rating' => $overallRating], 200);
     }
 }

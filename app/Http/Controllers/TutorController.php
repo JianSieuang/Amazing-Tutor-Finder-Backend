@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\EnrollTutor;
 use App\Models\User;
 use App\Models\Tutor;
+use App\Models\BookedTime;
+use App\Models\EnrollTutor;
 use App\Models\TutorSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -270,5 +271,11 @@ class TutorController extends Controller
             'amount' => '10.00',
             'tutorSessions' => $sessions,
         ], 200);
+    }
+
+    public function getEnrolledStudents($tutor_id)
+    {
+        $enrolledStudents = BookedTime::where('tutor_id', $tutor_id)->get();
+        return response()->json(['enrolled_students' => $enrolledStudents], 200);
     }
 }
