@@ -40,7 +40,10 @@ Route::get('/admin/dashboard', [UserController::class, 'getAdminDashboard']);
 Route::middleware(['auth:sanctum'])->post('/admin/social_media', [UserController::class, 'updateSocialMedia']);
 Route::get('/social_media', [UserController::class, 'getSocialMedia']);
 
-
+// Stripe Payment Gateway
 Route::post('/payment', [StripeController::class, 'checkout']);
 Route::get('/success', [StripeController::class, 'success'])->name('success');
 Route::get('/cancel', [StripeController::class, 'cancel'])->name('cancel');
+
+// Parent Purchase History
+Route::get('/parent/{id}/purchaseHistory', [UserController::class, 'getPurchaseHistory']);

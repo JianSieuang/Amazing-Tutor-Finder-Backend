@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BookedTime;
 use App\Models\User;
 use App\Models\Tutor;
 use App\Models\Report;
@@ -11,6 +12,7 @@ use App\Models\Student;
 use Illuminate\Http\Request;
 use App\Models\LinkedAccount;
 use App\Models\SocialMedia;
+use App\Models\TutorSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use function PHPUnit\Framework\isNull;
@@ -238,6 +240,62 @@ class UserController extends Controller
         return response()->json(['message' => 'Email unlinked successfully'], 200);
     }
 
+    public function getPurchaseHistory($user_id)
+    {
+        $history = Payment::where('parent_user_id', User::where('id', $user_id)->where('role', 'parent')->first()->id)->get();
+
+        $bookedTime = BookedTime::whereIn('id', $history->pluck('booked_time_id'))->get();
+
+        $tutorSessions = TutorSession::whereIn('user_id', $bookedTime->pluck('tutor_id'))->get();
+
+        $grpSession = [];
+        $sessionMap = [];
+
+        foreach ($bookedTime as $booked) {
+            $key = $booked->tutor_id . '-' . $booked->created_at;
+
+            $sessionTitle = $tutorSessions->where('user_id', $booked->tutor_id)->first()->title;
+
+            $tutor = Tutor::where('user_id', $booked->tutor_id)->first();
+
+            // If this session is already mapped, store its index
+            if (isset($sessionMap[$key])) {
+                $sessionIndex = $sessionMap[$key];
+                $grpSession[$sessionIndex]['grouped_ids'][] = $booked->id;
+
+                $grpSession[$sessionIndex]['title_image'] = $tutor->title_image;
+                $grpSession[$sessionIndex]['title'] = $sessionTitle;
+
+                // Add corresponding session info (same index)
+                $grpSession[$sessionIndex]['sessions'][] = [
+                    'month' => $booked->month,
+                    'day' => $booked->day,
+                    'time_slot' => $booked->time_slot,
+                ];
+            } else {
+                // Create a new group
+                $sessionIndex = count($grpSession);
+                $sessionMap[$key] = $sessionIndex;
+
+                $grpSession[$sessionIndex] = [
+                    'group_id' => $sessionIndex + 1, // Just a readable index
+                    'grouped_ids' => [$booked->id], // Store related booked time IDs
+                    'tutor_id' => $booked->tutor_id,
+                    'title_image' => $tutor->title_image,
+                    'title' => $sessionTitle,
+                    'sessions' => [[ // Each session includes its time details
+                        'month' => $booked->month,
+                        'day' => $booked->day,
+                        'time_slot' => $booked->time_slot,
+                    ]]
+                ];
+            }
+        }
+
+        return response()->json(['paymentHistory' => $history, 'bookedTime' => $bookedTime, 'tutorSessions' => $tutorSessions, 'grpSession' => $grpSession], 200);
+    }
+
+    // Admin
     public function getAdminDashboard()
     {
         $user = Auth::user();
