@@ -54,3 +54,6 @@ Route::get('/tutors/{id}/rating', [UserController::class, 'getRating']);
 
 // Enrolled Students
 Route::get('/tutors/{id}/enrolled_students', [TutorController::class, 'getEnrolledStudents']);
+
+// Enrolled Tutors 
+Route::get('/student/{id}/enrolled_tutors', [TutorController::class, 'getEnrolledTutors']);

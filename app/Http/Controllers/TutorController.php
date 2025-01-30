@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Tutor;
 use App\Models\BookedTime;
 use App\Models\EnrollTutor;
+use App\Models\Rate;
+use App\Models\Student;
 use App\Models\TutorSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -277,5 +279,42 @@ class TutorController extends Controller
     {
         $enrolledStudents = BookedTime::where('tutor_id', $tutor_id)->get();
         return response()->json(['enrolled_students' => $enrolledStudents], 200);
+    }
+
+    public function getEnrolledTutors(Request $request, $user_id)
+    {
+        $searchQuery = $request->input('search', '');
+
+        $student = Student::where('user_id', $user_id)->first();
+
+        $enrolledTutors = EnrollTutor::where('student_id', $student->id)->get();
+
+        $tutorIds = $enrolledTutors->pluck('tutor_id');
+
+        $tutors = Tutor::whereIn('user_id', $tutorIds)
+            ->when($searchQuery, function ($query) use ($searchQuery) {
+                $query->where('name', 'LIKE', "%$searchQuery%");
+            })
+            ->get();
+
+        $userIds = $tutors->pluck('user_id');
+
+        $sessions = TutorSession::whereIn('user_id', $userIds)
+            ->when($searchQuery, function ($query) use ($searchQuery) {
+                $query->where('title', 'LIKE', "%$searchQuery%");
+            })
+            ->get();
+
+        $rating = Rate::whereIn('tutor_id', $tutorIds)->get();
+
+        $enrolledStudents = BookedTime::whereIn('tutor_id', $tutorIds)->get();
+
+        return response()->json([
+            'message' => 'Enrolled tutors retrieved successfully!',
+            'tutorsData' => $tutors,
+            'sessionsData' => $sessions,
+            'ratings' => $rating,
+            'enrolledStudents' => $enrolledStudents
+        ], 200);
     }
 }

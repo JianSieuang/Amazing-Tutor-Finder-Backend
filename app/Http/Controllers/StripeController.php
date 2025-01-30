@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BookedTime;
+use App\Models\EnrollTutor;
 use App\Models\Payment;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -52,10 +53,12 @@ class StripeController extends Controller
     public function success(Request $request)
     {
         if ($request->has('sessions') && is_array($request->sessions)) {
+            $studentId = Student::where('user_id', $request->child_user_id)->first()->id;
+
             foreach ($request->sessions as $session) {
                 $bookedTime = new BookedTime();
                 $bookedTime->tutor_id = $request->tutor_id;
-                $bookedTime->student_id = Student::where('user_id', $request->child_user_id)->first()->id;
+                $bookedTime->student_id = $studentId;
                 $bookedTime->month = $request->month;
                 $bookedTime->day = explode(' ', $session)[0];
                 $bookedTime->time_slot = explode(' ', $session)[1];
@@ -76,6 +79,13 @@ class StripeController extends Controller
                 $payment->status = 'success';
                 $payment->save();
             }
+
+            $enrollTutor = new EnrollTutor();
+            $enrollTutor->student_id = $studentId;
+            $enrollTutor->tutor_id = $request->tutor_id;
+            $enrollTutor->enroll_date = $request->month;
+            $enrollTutor->status = 'approved';
+            $enrollTutor->save();
         }
 
         $session = $this->generateSession();
