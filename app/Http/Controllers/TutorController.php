@@ -36,10 +36,16 @@ class TutorController extends Controller
         // Get associated tutor sessions
         $tutorSessions = TutorSession::whereIn('tutor_id', $tutors->pluck('id')->toArray())->get();
 
+        $rating = Rate::whereIn('tutor_id', $tutors->pluck('user_id')->toArray())->get();
+
+        $enrolledStudents = BookedTime::whereIn('tutor_id', $tutors->pluck('user_id')->toArray())->get();
+
         return response()->json([
             'message' => 'Tutors retrieved successfully!',
             'tutors' => $tutors,
             'sessions' => $tutorSessions,
+            'ratings' => $rating,
+            'enrolledStudents' => $enrolledStudents,
             'totalTutors' => $totalTutors, // Total count for pagination
             'totalPages' => ceil($totalTutors / $perPage), // Calculate total pages
             'currentPage' => $page,
