@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
+use function PHPUnit\Framework\isEmpty;
+
 class TutorController extends Controller
 {
     public function index(Request $request)
@@ -291,19 +293,21 @@ class TutorController extends Controller
 
         $tutorIds = $enrolledTutors->pluck('tutor_id');
 
-        $tutors = Tutor::whereIn('user_id', $tutorIds)
-            ->when($searchQuery, function ($query) use ($searchQuery) {
-                $query->where('name', 'LIKE', "%$searchQuery%");
+        $tutors = Tutor::when($tutorIds, function ($query) use ($tutorIds) {
+            $query->whereIn('user_id', $tutorIds);
+        })
+            ->when($searchQuery != null && $searchQuery != '', function ($query) use ($searchQuery) {
+                $query->whereHas('user', function ($q) use ($searchQuery) {
+                    $q->where('name', 'LIKE', '%' . strtolower($searchQuery) . '%')
+                        ->orWhere('name', 'LIKE', '%' . ucfirst($searchQuery) . '%')
+                        ->orWhere('name', 'LIKE', '%' . strtoupper($searchQuery) . '%');
+                });
             })
             ->get();
 
         $userIds = $tutors->pluck('user_id');
 
-        $sessions = TutorSession::whereIn('user_id', $userIds)
-            ->when($searchQuery, function ($query) use ($searchQuery) {
-                $query->where('title', 'LIKE', "%$searchQuery%");
-            })
-            ->get();
+        $sessions = TutorSession::whereIn('user_id', $userIds)->get();
 
         $rating = Rate::whereIn('tutor_id', $tutorIds)->get();
 
