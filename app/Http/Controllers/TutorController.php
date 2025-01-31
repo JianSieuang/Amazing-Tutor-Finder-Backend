@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Tutor;
 use App\Models\BookedTime;
 use App\Models\EnrollTutor;
+use App\Models\Payment;
 use App\Models\Rate;
 use App\Models\Student;
 use App\Models\TutorSession;
@@ -272,13 +273,16 @@ class TutorController extends Controller
             return response()->json(['message' => 'Tutor not found!'], 404);
         }
 
-        $students = EnrollTutor::where('tutor_id', $tutor->id)->get();
+        $students = EnrollTutor::where('tutor_id', $user_id)->get();
         $sessions = TutorSession::where('tutor_id', $tutor->id)->get();
+        $bookedTimes = BookedTime::where('tutor_id', $user_id)->get();
+
+        $totalAmount = Payment::whereIn('booked_time_id', $bookedTimes->pluck('id'))->sum('amount');
 
         return response()->json([
             'message' => 'Tutor students retrieved successfully!',
             'students' => $students,
-            'amount' => '10.00',
+            'amount' => $totalAmount,
             'tutorSessions' => $sessions,
         ], 200);
     }
@@ -348,5 +352,17 @@ class TutorController extends Controller
         $sessions = TutorSession::whereIn('user_id', $userIds)->get();
 
         return response()->json(['tutorsData' => $tutors, 'usersData' => $users, 'sessionsData' => $sessions], 200);
+    }
+
+    public function getSchedule($user_id)
+    {
+        $schedules = BookedTime::where('tutor_id', $user_id)->get();
+
+        $students = Student::whereIn('id', $schedules->pluck('student_id'))->get();
+
+        $users = User::whereIn('id', $students->pluck('user_id'))->get();
+
+        $sessions = TutorSession::where('user_id', $user_id)->get();
+        return response()->json(['schedules' => $schedules, 'sessions' => $sessions, 'users' => $users, 'students' => $students], 200);
     }
 }
