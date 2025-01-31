@@ -57,3 +57,6 @@ Route::get('/tutors/{id}/enrolled_students', [TutorController::class, 'getEnroll
 
 // Enrolled Tutors 
 Route::get('/student/{id}/enrolled_tutors', [TutorController::class, 'getEnrolledTutors']);
+
+// Search Tutor
+Route::get('/search', [TutorController::class, 'searchTutor']);

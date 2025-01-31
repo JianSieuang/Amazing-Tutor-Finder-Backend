@@ -321,4 +321,26 @@ class TutorController extends Controller
             'enrolledStudents' => $enrolledStudents
         ], 200);
     }
+
+    public function searchTutor(Request $request)
+    {
+        $searchQuery = $request->input('search', '');
+
+        $tutors = Tutor::when($searchQuery != null && $searchQuery != '', function ($query) use ($searchQuery) {
+            $query->whereHas('user', function ($q) use ($searchQuery) {
+                $q->where('name', 'LIKE', '%' . strtolower($searchQuery) . '%')
+                    ->orWhere('name', 'LIKE', '%' . ucfirst($searchQuery) . '%')
+                    ->orWhere('name', 'LIKE', '%' . strtoupper($searchQuery) . '%');
+            });
+        })
+            ->get();
+
+        $userIds = $tutors->pluck('user_id');
+
+        $users = User::whereIn('id', $userIds)->get();
+
+        $sessions = TutorSession::whereIn('user_id', $userIds)->get();
+
+        return response()->json(['tutorsData' => $tutors, 'usersData' => $users, 'sessionsData' => $sessions], 200);
+    }
 }
