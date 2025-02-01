@@ -40,6 +40,8 @@ Route::get('/tutors/{tutor_id}/schedule', [TutorController::class, 'getSchedule'
 Route::get('/admin/dashboard', [UserController::class, 'getAdminDashboard']);
 Route::middleware(['auth:sanctum'])->post('/admin/social_media', [UserController::class, 'updateSocialMedia']);
 Route::get('/social_media', [UserController::class, 'getSocialMedia']);
+Route::get('/admin/payments', [UserController::class, 'getPayment']);
+
 
 // Stripe Payment Gateway
 Route::post('/payment', [StripeController::class, 'checkout']);
@@ -67,4 +69,3 @@ Route::post('/report/tutor', [UserController::class, 'reportTutor']);
 Route::get('/report/tutor', [UserController::class, 'getReport']);
 Route::get('/report/tutor/{id}', [UserController::class, 'getReportById']);
 Route::post('/report/{id}/submit', [UserController::class, 'submitReport']);
-

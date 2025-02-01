@@ -432,4 +432,25 @@ class UserController extends Controller
 
         return response()->json(['rating' => $rating, 'overall_rating' => $overallRating], 200);
     }
+
+    public function getPayment()
+    {
+        $payments = Payment::all();
+
+        $bookedTime = BookedTime::whereIn('id', $payments->pluck('booked_time_id'))->get();
+
+        $tutors = User::whereIn('id', $bookedTime->pluck('tutor_id'))->get();
+
+        $parents = User::whereIn('id', $payments->pluck('parent_user_id'))->get();
+
+        $students = User::whereIn('id', $payments->pluck('student_user_id'))->get();
+
+        return response()->json([
+            'paymentHistory' => $payments,
+            'bookSessions' => $bookedTime,
+            'tutors' => $tutors,
+            'parents' => $parents,
+            'students' => $students
+        ], 200);
+    }
 }
