@@ -368,4 +368,21 @@ class TutorController extends Controller
 
         return response()->json(['schedules' => $schedules, 'sessions' => $sessions, 'users' => $users, 'students' => $students, 'tutors' => $tutors], 200);
     }
+
+    public function getPayments($user_id)
+    {
+        $bookedTimes = BookedTime::where('tutor_id', $user_id)->get();
+        $payments = Payment::whereIn('booked_time_id', $bookedTimes->pluck('id'))->get();
+        $students = User::whereIn('id', $payments->pluck('student_user_id'))->get();
+        $parents = User::whereIn('id', $payments->pluck('parent_user_id'))->get();
+        $tutors = User::whereIn('id', $bookedTimes->pluck('tutor_id'))->get();
+
+        return response()->json([
+            'paymentHistory' => $payments,
+            'bookSessions' => $bookedTimes,
+            'tutors' => $tutors,
+            'parents' => $parents,
+            'students' => $students
+        ], 200);
+    }
 }

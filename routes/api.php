@@ -35,6 +35,7 @@ Route::middleware(['auth:sanctum'])->post('/tutors/{tutor_id}/add_session', [Tut
 Route::get('/tutors/{tutor_id}/sessions', [TutorController::class, 'getSessions']);
 Route::get('/tutors/{tutor_id}/dashboard', [TutorController::class, 'getDashboard']);
 Route::get('/tutors/{tutor_id}/schedule', [TutorController::class, 'getSchedule']);
+Route::get('/tutor/{id}/payments', [TutorController::class, 'getPayments']);
 
 // Admin Dashboard
 Route::get('/admin/dashboard', [UserController::class, 'getAdminDashboard']);

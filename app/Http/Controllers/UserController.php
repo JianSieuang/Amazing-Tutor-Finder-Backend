@@ -191,7 +191,7 @@ class UserController extends Controller
         }
 
         if ($user->role === 'student') {
-            $linkedAccounts = LinkedAccount::where('student_id', Student::where('user_id', $user->id)->first()->id)->where('status', '!=', 'rejected')->get();
+            $linkedAccounts = LinkedAccount::where('student_id', Student::where('user_id', $user->id)->first()->id)->where('status', '!=', 'pending')->where('status', '!=', 'rejected')->get();
             $parent = $linkedAccounts->map(function ($linkedAccount) {
                 return \App\Models\User::find(\App\Models\Parents::find($linkedAccount->parent_id)->user_id);
             })->first();
@@ -200,7 +200,7 @@ class UserController extends Controller
         }
 
         if ($user->role === 'parent') {
-            $linkedAccounts = LinkedAccount::where('parent_id', Parents::where('user_id', $user->id)->first()->id)->where('status', '!=', 'rejected')->get();
+            $linkedAccounts = LinkedAccount::where('parent_id', Parents::where('user_id', $user->id)->first()->id)->where('status', '!=', 'pending')->where('status', '!=', 'rejected')->get();
             $students = $linkedAccounts->map(function ($linkedAccount) {
                 return User::find(Student::find($linkedAccount->student_id)->user_id);
             });
