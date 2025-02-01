@@ -61,3 +61,10 @@ Route::get('/student/{id}/enrolled_tutors', [TutorController::class, 'getEnrolle
 
 // Search Tutor
 Route::get('/search', [TutorController::class, 'searchTutor']);
+
+// Report Tutor 
+Route::post('/report/tutor', [UserController::class, 'reportTutor']);
+Route::get('/report/tutor', [UserController::class, 'getReport']);
+Route::get('/report/tutor/{id}', [UserController::class, 'getReportById']);
+Route::post('/report/{id}/submit', [UserController::class, 'submitReport']);
+

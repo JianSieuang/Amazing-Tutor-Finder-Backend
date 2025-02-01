@@ -295,6 +295,41 @@ class UserController extends Controller
         return response()->json(['paymentHistory' => $history, 'bookedTime' => $bookedTime, 'tutorSessions' => $tutorSessions, 'grpSession' => $grpSession], 200);
     }
 
+    public function reportTutor(Request $request)
+    {
+        $report = new Report();
+        $report->report_by = $request->input('report_by');
+        $report->report_to = $request->input('report_to');
+        $report->description = $request->input('description');
+        $report->save();
+
+        return response()->json(['message' => 'Report sent successfully'], 200);
+    }
+
+    public function getReport()
+    {
+        $report = Report::with(['user', 'reportTutor'])->get();
+
+        return response()->json(['reports' => $report], 200);
+    }
+
+    public function getReportById($id)
+    {
+        $report = Report::with(['user', 'reportTutor', 'reportTutor.isTutor'])->find($id);
+
+        return response()->json(['report' => $report], 200);
+    }
+
+    public function submitReport(Request $request, $id)
+    {
+        $report = Report::find($id);
+        $report->feedback = $request->input('feedback');
+        $report->status = 'replied';
+        $report->save();
+
+        return response()->json(['message' => 'Report submitted successfully'], 200);
+    }
+
     // Admin
     public function getAdminDashboard()
     {

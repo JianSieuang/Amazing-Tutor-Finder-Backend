@@ -49,4 +49,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function isTutor()
+    {
+        return $this->hasOne(Tutor::class, 'user_id', 'id');
+    }
 }
