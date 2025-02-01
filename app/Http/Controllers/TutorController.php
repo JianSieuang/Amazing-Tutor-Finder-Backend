@@ -363,6 +363,9 @@ class TutorController extends Controller
         $users = User::whereIn('id', $students->pluck('user_id'))->get();
 
         $sessions = TutorSession::where('user_id', $user_id)->get();
-        return response()->json(['schedules' => $schedules, 'sessions' => $sessions, 'users' => $users, 'students' => $students], 200);
+
+        $tutors = User::whereIn('id', $schedules->pluck('tutor_id'))->where('role', 'tutor')->get();
+
+        return response()->json(['schedules' => $schedules, 'sessions' => $sessions, 'users' => $users, 'students' => $students, 'tutors' => $tutors], 200);
     }
 }
