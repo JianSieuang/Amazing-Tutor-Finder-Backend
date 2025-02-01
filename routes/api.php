@@ -12,6 +12,10 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Forgot Password
+Route::post('/getUser', [UserController::class, 'getUser']);
+Route::post('/resetPassword', [UserController::class, 'resetPassword']);
+
 // Update Image
 Route::middleware(['auth:sanctum'])->post('/users/{user_id}/image', [UserController::class, 'updateImage']);
 

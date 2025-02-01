@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Validation\Rules;
 use App\Models\BookedTime;
 use App\Models\User;
 use App\Models\Tutor;
@@ -22,6 +23,31 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+    public function getUser(Request $request)
+    {
+        $user = User::where('email', $request->input('email'))->first();
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        return response()->json(['user' => $user], 200);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $user = User::where('email', $request->input('email'))->first();
+        $request->validate([
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+
+        $user->password = Hash::make($request->input('password'));
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully'], 200);
+    }
+
+
     public function update(Request $request)
     {
         // Retrieve the authenticated user
