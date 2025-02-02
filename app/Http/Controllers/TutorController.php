@@ -30,10 +30,11 @@ class TutorController extends Controller
         $tutors = Tutor::query()
             ->with('user')
             ->where('status', 'approved')
+            ->whereHas('hasSessions')
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
-
+            
         // Get associated tutor sessions
         $tutorSessions = TutorSession::whereIn('tutor_id', $tutors->pluck('id')->toArray())->get();
 
