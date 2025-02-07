@@ -29,12 +29,18 @@ class TutorController extends Controller
         // Fetch paginated tutors
         $tutors = Tutor::query()
             ->with('user')
-            ->where('status', 'approved')
-            ->whereHas('hasSessions')
+            ->where('status', 'approved');
+
+        // if is not admin then fetch tutor that only has sessions
+        if (!strpos($request->header('X-Referer'), '/admin')) {
+            $tutors = $tutors->whereHas('hasSessions');
+        }
+
+        $tutors = $tutors
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
-            
+
         // Get associated tutor sessions
         $tutorSessions = TutorSession::whereIn('tutor_id', $tutors->pluck('id')->toArray())->get();
 
@@ -206,7 +212,7 @@ class TutorController extends Controller
         $tutor->title_image = $titleImageUrl ?? $tutor->title_image;
         $tutor->save();
 
-        return response()->json(['message' => 'Tutor updated successfully!', 'user' => $user, 'tutor' => $tutor, 'title_image' => $titleImageUrl], 200);
+        return response()->json(['message' => 'Tutor updated successfully!', 'user' => $user, 'tutor' => $tutor, 'title_image' => $titleImageUrl ?? null], 200);
     }
 
     public function addSession(Request $request, $user_id)
