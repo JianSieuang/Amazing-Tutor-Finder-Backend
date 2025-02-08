@@ -49,6 +49,22 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Retrieve the authenticated user.
+        $user = Auth::user();
+
+        // If the user is a tutor, check if the tutor's status is approved.
+        if ($user && isset($user->role) && $user->role === 'tutor') {
+            // Retrieve the tutor record associated with this user.
+            $tutor = Tutor::where('user_id', $user->id)->first();
+
+            // If the tutor exists and is not approved, logout and throw an error.
+            if ($tutor && $tutor->status !== 'approved') {
+                Auth::logout();
+                throw ValidationException::withMessages([
+                    'email' => 'Your tutor account is not approved yet.',
+                ]);
+            }
+        }
         RateLimiter::clear($this->throttleKey());
     }
 

@@ -22,44 +22,63 @@ class TutorController extends Controller
     {
         $perPage = $request->input('perPage', 12);
         $page = $request->input('page', 1);
-
+        $sortBy = $request->input('sortBy', '');
+        $sortOrder = $request->input('sortOrder', 'desc'); // 'asc' or 'desc'
+    
         // Get total count of approved tutors
         $totalTutors = Tutor::where('status', 'approved')->count();
-
-        // Fetch paginated tutors
-        $tutors = Tutor::query()
-            ->with('user')
-            ->where('status', 'approved');
-
-        // if is not admin then fetch tutor that only has sessions
+    
+        // Build the base query
+        $tutorsQuery = Tutor::query()->with('user')->where('status', 'approved');
+    
+        // If not admin, fetch tutors that have sessions.
         if (!strpos($request->header('X-Referer'), '/admin')) {
-            $tutors = $tutors->whereHas('hasSessions');
+            $tutorsQuery = $tutorsQuery->whereHas('hasSessions');
         }
-
-        $tutors = $tutors
-            ->skip(($page - 1) * $perPage)
-            ->take($perPage)
-            ->get();
-
-        // Get associated tutor sessions
+    
+        // Apply sorting based on criteria
+        if ($sortBy === 'price') {
+            // Sorting by price using a join on tutor_sessions
+            $tutorsQuery = $tutorsQuery->join('tutor_sessions', 'tutor_sessions.tutor_id', '=', 'tutors.id')
+                                       ->orderBy('tutor_sessions.price', $sortOrder)
+                                       ->select('tutors.*');
+        } elseif ($sortBy === 'rating') {
+            // Using withAvg to compute the average rating and order by it.
+            $tutorsQuery = $tutorsQuery->withAvg('rates', 'rate')
+                                       ->orderBy('rates_avg_rate', $sortOrder);
+        }
+    
+        // Paginate the tutors
+        $tutors = $tutorsQuery->skip(($page - 1) * $perPage)
+                              ->take($perPage)
+                              ->get();
+    
+        // (Optional) Retrieve additional related data like tutor sessions, ratings, and enrolled students
         $tutorSessions = TutorSession::whereIn('tutor_id', $tutors->pluck('id')->toArray())->get();
-
-        $rating = Rate::whereIn('tutor_id', $tutors->pluck('user_id')->toArray())->get();
-
+        $ratings = Rate::whereIn('tutor_id', $tutors->pluck('user_id')->toArray())->get();
         $enrolledStudents = BookedTime::whereIn('tutor_id', $tutors->pluck('user_id')->toArray())->get();
-
+    
+        // Transform tutors to include the computed average rating and enrolled student count
+        $tutors->transform(function ($tutor) use ($enrolledStudents) {
+            // Here, the computed average rating is available as rates_avg_rate
+            $tutor->overallRate = round($tutor->rates_avg_rate ?? 0, 1);
+            $tutor->enrolledStudent = $enrolledStudents->where('tutor_id', $tutor->user_id)->count();
+            return $tutor;
+        });
+    
         return response()->json([
             'message' => 'Tutors retrieved successfully!',
             'tutors' => $tutors,
             'sessions' => $tutorSessions,
-            'ratings' => $rating,
+            'ratings' => $ratings,
             'enrolledStudents' => $enrolledStudents,
-            'totalTutors' => $totalTutors, // Total count for pagination
-            'totalPages' => ceil($totalTutors / $perPage), // Calculate total pages
+            'totalTutors' => $totalTutors,
+            'totalPages' => ceil($totalTutors / $perPage),
             'currentPage' => $page,
             'perPage' => $perPage,
         ], 200);
     }
+    
 
 
     public function pendingTutors()

@@ -27,4 +27,10 @@ class Tutor extends Model
     {
         return $this->hasMany(TutorSession::class, 'user_id', 'user_id');
     }
+
+    public function rates()
+    {
+        return $this->hasMany(Rate::class, 'tutor_id', 'user_id');
+    }
+
 }
