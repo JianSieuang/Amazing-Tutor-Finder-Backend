@@ -74,3 +74,6 @@ Route::post('/report/tutor', [UserController::class, 'reportTutor']);
 Route::get('/report/tutor', [UserController::class, 'getReport']);
 Route::get('/report/tutor/{id}', [UserController::class, 'getReportById']);
 Route::post('/report/{id}/submit', [UserController::class, 'submitReport']);
+
+// About us
+Route::get('/get-number-of-user', [UserController::class, 'getNumberOfUser']);

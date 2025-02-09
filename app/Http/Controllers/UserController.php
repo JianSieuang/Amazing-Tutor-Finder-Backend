@@ -34,6 +34,18 @@ class UserController extends Controller
         return response()->json(['user' => $user], 200);
     }
 
+    public function getNumberOfUser()
+    {
+        $students = Student::all()->count();
+        $tutors = Tutor::where('status', 'approved')->count();
+
+        return response()->json(
+            [
+                'students' => $students,
+                'tutors' => $tutors
+            ], 200);
+    }
+
     public function resetPassword(Request $request)
     {
         $user = User::where('email', $request->input('email'))->first();
