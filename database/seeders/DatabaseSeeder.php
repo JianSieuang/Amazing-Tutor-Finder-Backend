@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\LinkedAccount;
+use App\Models\Parents;
 use App\Models\SocialMedia;
+use App\Models\Student;
 use App\Models\User;
 use App\Models\Tutor;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -20,7 +23,8 @@ class DatabaseSeeder extends Seeder
     {
         User::factory(10)->create();
 
-        User::factory()->create([
+        // Student
+        $user = User::factory()->create([
             'name' => 'Test Student',
             'email' => 'student@example.com',
             'phone' => '1234567890',
@@ -32,6 +36,40 @@ class DatabaseSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
+        $student = Student::create([
+            'user_id' => $user->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Parent
+        $user = User::factory()->create([
+            'name' => 'Parent User',
+            'email' => 'parent@example.com',
+            'phone' => '1234567890',
+            'password' => Hash::make('password'),
+            'role' => 'parent',
+            'email_verified_at' => now(),
+            'remember_token' => 'testtoken',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $parent = Parents::create([
+            'user_id' => $user->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        LinkedAccount::create([
+            'student_id' => $student->id,
+            'parent_id' => $parent->id,
+            'status' => 'approved',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Admin
         User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@gmail.com',
@@ -44,6 +82,7 @@ class DatabaseSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
+        // Tutor
         for ($i = 1; $i <= 25; $i++) {
             $user = User::factory()->create([
                 'name' => "Tutor{$i} User",
@@ -71,6 +110,7 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ]);
 
+            // Tutor Sessions
             TutorSession::create([
                 'tutor_id' => $tutor->id,
                 'user_id' => $user->id,
@@ -98,6 +138,7 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        // Admin Side Setting Social Media
         SocialMedia::create([
             'facebook' => 'https://www.facebook.com/mmumalaysia/',
             'instagram' => 'https://www.instagram.com/l33_y1_yan6?igsh=MTBheG0zMjU3NmkzOA==',
