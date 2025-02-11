@@ -21,56 +21,55 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory(10)->create();
-
         // Student
-        $user = User::factory()->create([
-            'name' => 'Test Student',
-            'email' => 'student@example.com',
-            'phone' => '1234567890',
-            'password' => Hash::make('password'),
-            'role' => 'student',
+        $studentUser = User::create([
+            'name'             => 'Test Student',
+            'email'            => 'student@example.com',
+            'phone'            => '1234567890',
+            'password'         => Hash::make('password'),
+            'role'             => 'student',
             'email_verified_at' => now(),
-            'remember_token' => 'testtoken',
-            'created_at' => now(),
-            'updated_at' => now(),
+            'remember_token'   => 'testtoken',
+            'created_at'       => now(),
+            'updated_at'       => now(),
         ]);
 
         $student = Student::create([
-            'user_id' => $user->id,
+            'user_id'    => $studentUser->id,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         // Parent
-        $user = User::factory()->create([
-            'name' => 'Parent User',
-            'email' => 'parent@example.com',
-            'phone' => '1234567890',
-            'password' => Hash::make('password'),
-            'role' => 'parent',
+        $parentUser = User::create([
+            'name'             => 'Parent User',
+            'email'            => 'parent@example.com',
+            'phone'            => '1234567890',
+            'password'         => Hash::make('password'),
+            'role'             => 'parent',
             'email_verified_at' => now(),
-            'remember_token' => 'testtoken',
-            'created_at' => now(),
-            'updated_at' => now(),
+            'remember_token'   => 'testtoken',
+            'created_at'       => now(),
+            'updated_at'       => now(),
         ]);
 
         $parent = Parents::create([
-            'user_id' => $user->id,
+            'user_id'    => $parentUser->id,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
+        // Link student and parent
         LinkedAccount::create([
             'student_id' => $student->id,
-            'parent_id' => $parent->id,
-            'status' => 'approved',
+            'parent_id'  => $parent->id,
+            'status'     => 'approved',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         // Admin
-        User::factory()->create([
+        User::create([
             'name' => 'Admin User',
             'email' => 'admin@gmail.com',
             'phone' => '1234567890',
@@ -84,7 +83,7 @@ class DatabaseSeeder extends Seeder
 
         // Tutor
         for ($i = 1; $i <= 25; $i++) {
-            $user = User::factory()->create([
+            $user = User::create([
                 'name' => "Tutor{$i} User",
                 'email' => "tutor{$i}@example.com",
                 'phone' => "123456789{$i}",
@@ -105,7 +104,12 @@ class DatabaseSeeder extends Seeder
                 'linkedln' => 'https://my.linkedin.com/in/sim-boon-xun-913766287',
                 'whatsapp' => 'https://wa.me/60123231859',
                 'status' => Arr::random(['pending', 'approved']),
-                'title_image' => '/storage/profile_pictures/84YR1cA4krXDgjmFvfiGNdIWRIfBcBSSzVjM7OYR.png',
+                'title_image' => '/storage/profile_pictures/' . Arr::random([
+                    '5XJ3wD7BsGH9iUZoY8RdKlV2PzMfB1D9T1kA6VRF.png',
+                    'Cz7Kp1NbVR4jLQ9iXaFhZ3G2tYoJ6s8W0kB0E5Y8.png',
+                    'W2Qc3M4T5eHv9F7ZKrGD4YuG5J1Nn8LqY6Xi6K9T.png',
+                    'L8qR3s9N2Dk6VdF1BzG7M6QpTfW4J0Y9rB0z7WJX.png'
+                ]),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
